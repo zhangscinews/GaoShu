@@ -26,50 +26,18 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 配置matplotlib中文字体，自动适配云端Linux/本地Windows/Mac，云端中文不再显示方框
+import os
 def configure_chinese_font():
-    import os
-    # 多系统优先尝试的字体路径列表
-    font_candidates = [
-        # Streamlit云端Linux路径（多个可能的Noto字体位置）
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
-        "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
-        "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc", # 文泉驿微米黑（Linux通用）
-        # Windows本地路径
-        "C:/Windows/Fonts/simhei.ttf",
-        "C:/Windows/Fonts/msyh.ttc",
-        # MacOS本地路径
-        "/System/Library/Fonts/PingFang.ttc",
-        "/System/Library/Fonts/STHeiti Medium.ttc",
-    ]
+    # 直接加载同目录下的simhei.ttf，不依赖任何系统字体，100%生效
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    font_path = os.path.join(current_dir, "simhei.ttf")
     
-    # 先逐个尝试候选路径，找到第一个存在的字体
-    font_loaded = False
-    for font_path in font_candidates:
-        if os.path.exists(font_path):
-            try:
-                font_prop = font_manager.FontProperties(fname=font_path)
-                plt.rcParams['font.family'] = font_prop.get_name()
-                font_loaded = True
-                break
-            except:
-                continue
+    # 加载字体并清空matplotlib字体缓存，防止不生效
+    font_manager.fontManager.addfont(font_path)
+    font_prop = font_manager.FontProperties(fname=font_path)
+    plt.rcParams['font.family'] = font_prop.get_name()
+    plt.rcParams['axes.unicode_minus'] = False  # 负号正常显示
     
-    # 如果候选路径都找不到，用兜底字体列表，自动匹配系统已安装的中文字体
-    if not font_loaded:
-        plt.rcParams['font.sans-serif'] = [
-            'Noto Sans CJK SC',
-            'Noto Sans CJK JP',
-            'WenQuanYi Micro Hei',
-            'SimHei',
-            'Microsoft YaHei',
-            'PingFang SC',
-            'Arial Unicode MS',
-            'DejaVu Sans'
-        ]
-    
-    plt.rcParams['axes.unicode_minus'] = False  # 负号正常显示，不显示成方框
 
 configure_chinese_font()
 
