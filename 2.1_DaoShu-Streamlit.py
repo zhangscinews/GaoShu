@@ -26,22 +26,50 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 配置matplotlib中文字体，避免中文显示为方框
+# 配置matplotlib中文字体，自动适配云端Linux/本地Windows/Mac，云端中文不再显示方框
 def configure_chinese_font():
-    system = platform.system()
-    if system == "Windows":
-        font_path = "C:/Windows/Fonts/simhei.ttf"
-    elif system == "Darwin":  # MacOS
-        font_path = "/System/Library/Fonts/PingFang.ttc"
-    else:  # Linux
-        font_path = "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc"
-    try:
-        font_prop = font_manager.FontProperties(fname=font_path)
-        plt.rcParams['font.family'] = font_prop.get_name()
-    except:
-        # 找不到指定字体时用系统默认，不报错
-        plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'Noto Sans CJK JP']
-    plt.rcParams['axes.unicode_minus'] = False  # 负号正常显示
+    import os
+    # 多系统优先尝试的字体路径列表
+    font_candidates = [
+        # Streamlit云端Linux路径（多个可能的Noto字体位置）
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc", # 文泉驿微米黑（Linux通用）
+        # Windows本地路径
+        "C:/Windows/Fonts/simhei.ttf",
+        "C:/Windows/Fonts/msyh.ttc",
+        # MacOS本地路径
+        "/System/Library/Fonts/PingFang.ttc",
+        "/System/Library/Fonts/STHeiti Medium.ttc",
+    ]
+    
+    # 先逐个尝试候选路径，找到第一个存在的字体
+    font_loaded = False
+    for font_path in font_candidates:
+        if os.path.exists(font_path):
+            try:
+                font_prop = font_manager.FontProperties(fname=font_path)
+                plt.rcParams['font.family'] = font_prop.get_name()
+                font_loaded = True
+                break
+            except:
+                continue
+    
+    # 如果候选路径都找不到，用兜底字体列表，自动匹配系统已安装的中文字体
+    if not font_loaded:
+        plt.rcParams['font.sans-serif'] = [
+            'Noto Sans CJK SC',
+            'Noto Sans CJK JP',
+            'WenQuanYi Micro Hei',
+            'SimHei',
+            'Microsoft YaHei',
+            'PingFang SC',
+            'Arial Unicode MS',
+            'DejaVu Sans'
+        ]
+    
+    plt.rcParams['axes.unicode_minus'] = False  # 负号正常显示，不显示成方框
 
 configure_chinese_font()
 
