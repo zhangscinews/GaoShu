@@ -131,7 +131,7 @@ page = st.sidebar.radio(
         "0. 课程导入：两个经典问题✨",
         "1. 导数的定义",
         "2. 用定义求导数例题",
-        "3. 单侧导数与导函数",
+        "3. 单侧导数与导函数✨",
         "4. 可导与连续的关系",
         "5. 几何意义：割线变切线✨",
         "6. 切线与法线方程",
@@ -501,7 +501,7 @@ elif page == "2. 用定义求导数例题":
     """)
 
 # 3. 单侧导数与导函数
-elif page == "3. 单侧导数与导函数":
+elif page == "3. 单侧导数与导函数✨":
     st.title("3. 单侧导数与导函数")
     st.markdown("---")
     
@@ -548,18 +548,6 @@ elif page == "3. 单侧导数与导函数":
     """)
     
     st.markdown("---")
-    st.markdown("### 四、例题：求常见函数的导函数")
-    st.markdown("#### 例1：求下列函数的导函数")
-    with st.expander("点击查看解答"):
-        st.markdown("""
-        1. $f(x) = x^5$：由幂函数公式，$f'(x) = 5x^{5-1} = 5x^4$
-        2. $f(x) = \\sqrt[3]{x} = x^{\\frac{1}{3}}$：$f'(x) = \\dfrac{1}{3}x^{\\frac{1}{3}-1} = \\dfrac{1}{3}x^{-\\frac{2}{3}} = \\dfrac{1}{3\\sqrt[3]{x^2}}$
-        3. $f(x) = 2^x$：由指数函数公式，$f'(x) = 2^x \\ln 2$
-        4. $f(x) = \\log_2 x$：由对数函数公式，$f'(x) = \\dfrac{1}{x\\ln 2}$
-        5. $f(x) = \\ln x$：$f'(x) = \\dfrac{1}{x}$
-        """)
-    
-    st.markdown("---")
     st.markdown("#### 例2：分段函数在分界点处的可导性判断")
     st.markdown("讨论函数 $f(x) = \\begin{cases} x^2, & x \\leq 1 \\\\ ax+b, & x>1 \\end{cases}$ 在 $x=1$ 处的连续性与可导性，并确定 $a,b$ 使函数在 $x=1$ 处可导。")
     with st.expander("点击查看解答"):
@@ -581,6 +569,200 @@ elif page == "3. 单侧导数与导函数":
         
         **结论**：当 $a=2, b=-1$ 时，函数在 $x=1$ 处连续且可导，且 $f'(1)=2$。
         """)
+    
+    st.markdown("---")
+    st.markdown(r"### ✨ 例题：例10（分段函数可导性交互式演示）")
+    st.markdown("**例10** 设")
+    st.latex(r"f(x)=\begin{cases} e^{-x}, & x\leq 0 \\ x^2+ax+b, & x>0 \end{cases}")
+    st.markdown(r"确定常数 $a,b$，使 $f(x)$ 在 $x=0$ 点可导。")
+
+    # ──────────────────────────────────────────────────────────────
+    # 例10 详细解析求解过程（只补这一处，其余代码保持不动）
+    # 思路固定：先由「连续性」定一个参数，再由「左右导数相等」定另一个参数
+    # ──────────────────────────────────────────────────────────────
+    with st.expander("📖 例10 详细解析求解过程（先定连续，再比导数）", expanded=True):
+        st.markdown(r"**分析**：$f(x)$ 在分界点 $x=0$ 两侧表达式不同，不能对某一支直接套求导公式。"
+                    r"按「可导必连续」和「可导 ⇔ 左右导数存在且相等」两条，分两步走。")
+
+        st.markdown(r"##### 第一步：由连续性确定 $b$（因为可导一定连续）")
+        st.markdown(r"先算分界点处的函数值与左、右极限：")
+        st.latex(r"f(0)=e^{-0}=1")
+        st.latex(r"\lim_{x\to 0^-} f(x)=\lim_{x\to 0^-} e^{-x}=1")
+        st.latex(r"\lim_{x\to 0^+} f(x)=\lim_{x\to 0^+}\left(x^2+ax+b\right)=b")
+        st.markdown(r"连续要求三者相等，即 $\lim\limits_{x\to 0^-} f(x)=\lim\limits_{x\to 0^+} f(x)=f(0)$，"
+                    r"于是 $1=b$，得到")
+        st.latex(r"b=1")
+        st.markdown(r"👉 注意：这里只定出了 $b$，参数 $a$ 还没受任何限制——"
+                    r"因为只要 $b=1$，函数在 $x=0$ 处就已经连续，$a$ 取任何值都行。"
+                    r"所以必须再用「可导」这个条件。")
+
+        st.markdown(r"##### 第二步：由可导性确定 $a$（分界点处回到定义）")
+        st.markdown(r"**左导数**（$x\le 0$ 时用 $e^{-x}$）：")
+        st.latex(r"f'_-(0)=\lim_{x\to 0^-}\frac{f(x)-f(0)}{x-0}=\lim_{x\to 0^-}\frac{e^{-x}-1}{x}=-1")
+        st.markdown(r"此处用了等价无穷小 $e^{-x}-1\sim -x\ (x\to 0)$，也可用洛必达法则。")
+        st.markdown(r"**右导数**（$x>0$ 时用 $x^2+ax+b$，并把第一步求得的 $b=1$ 代入）：")
+        st.latex(r"f'_+(0)=\lim_{x\to 0^+}\frac{f(x)-f(0)}{x-0}=\lim_{x\to 0^+}\frac{x^2+ax+1-1}{x}=\lim_{x\to 0^+}\frac{x^2+ax}{x}=\lim_{x\to 0^+}(x+a)=a")
+        st.markdown(r"函数在 $x=0$ 处可导的充要条件是左右导数存在且相等，即 $f'_-(0)=f'_+(0)$，"
+                    r"于是 $-1=a$，得到")
+        st.latex(r"a=-1")
+
+        st.markdown(r"##### 第三步：结论与复核")
+        st.success(r"当 $a=-1,\ b=1$ 时，$f(x)$ 在 $x=0$ 处连续且可导，且 $f'(0)=-1$。")
+        st.markdown(r"此时导函数为")
+        st.latex(r"f'(x)=\begin{cases}-e^{-x}, & x<0 \\ 2x-1, & x>0\end{cases}")
+        st.markdown(r"把 $x=0$ 代入两侧：左边 $-e^{0}=-1$，右边 $2\times 0-1=-1$，两侧导数值都是 $-1$，"
+                    r"与用定义算出的结果完全一致。")
+        st.markdown(r"> 一句话小结：**先由连续定 $b$，再由左右导数相等定 $a$**，两步一步都不能少，"
+                    r"顺序也不能颠倒。（下面拖动 a、b 滑块，可以直观验证这三种状态。）")
+
+    if "ex10_a_slider" not in st.session_state:
+        st.session_state["ex10_a_slider"] = -2.0
+    if "ex10_a_input" not in st.session_state:
+        st.session_state["ex10_a_input"] = -2.0
+    if "ex10_b_slider" not in st.session_state:
+        st.session_state["ex10_b_slider"] = 0.0
+    if "ex10_b_input" not in st.session_state:
+        st.session_state["ex10_b_input"] = 0.0
+
+    def _ex10_a_from_slider():
+        st.session_state["ex10_a_input"] = float(st.session_state["ex10_a_slider"])
+
+    def _ex10_a_from_input():
+        v_in = float(st.session_state["ex10_a_input"])
+        st.session_state["ex10_a_slider"] = min(max(v_in, -5.0), 5.0)
+
+    def _ex10_b_from_slider():
+        st.session_state["ex10_b_input"] = float(st.session_state["ex10_b_slider"])
+
+    def _ex10_b_from_input():
+        v_in = float(st.session_state["ex10_b_input"])
+        st.session_state["ex10_b_slider"] = min(max(v_in, -3.0), 3.0)
+
+    c_a, c_b = st.columns(2)
+    with c_a:
+        st.slider("参数 a：拖动粗调", min_value=-5.0, max_value=5.0, step=0.5,
+                  key="ex10_a_slider", on_change=_ex10_a_from_slider)
+        st.number_input("↳ 精确输入 a", min_value=-5.0, max_value=5.0,
+                        step=0.1, format="%.2f",
+                        key="ex10_a_input", on_change=_ex10_a_from_input)
+    with c_b:
+        st.slider("参数 b：拖动粗调", min_value=-3.0, max_value=3.0, step=0.5,
+                  key="ex10_b_slider", on_change=_ex10_b_from_slider)
+        st.number_input("↳ 精确输入 b", min_value=-3.0, max_value=3.0,
+                        step=0.1, format="%.2f",
+                        key="ex10_b_input", on_change=_ex10_b_from_input)
+
+    a_val = float(st.session_state["ex10_a_input"])
+    b_val = float(st.session_state["ex10_b_input"])
+    
+    # 计算极限与导数
+    f0 = 1.0  # e^0 = 1
+    left_lim = 1.0  # lim_{x→0^-} e^{-x} = 1
+    right_lim = 0 + 0 + b_val  # lim_{x→0^+} (x^2+ax+b) = b
+    is_continuous = (abs(left_lim - right_lim) < 1e-6) and (abs(right_lim - f0) < 1e-6)
+    left_deriv = -1.0  # lim_{x→0^-} (e^{-x}-1)/x = -1
+    right_deriv = a_val  # lim_{x→0^+} (x^2+ax+b - 1)/x，连续时 b=1 得 a
+    is_differentiable = is_continuous and (abs(left_deriv - right_deriv) < 1e-6)
+    
+    if is_continuous:
+        right_deriv_txt = f"{right_deriv:.2f}"
+        right_deriv_delta = f"{right_deriv-left_deriv:+.2f}（与左导数之差）"
+    else:
+        right_deriv_txt = "不存在"
+        right_deriv_delta = "分子常数项 b−1≠0，差商发散"
+    m1, m2, m3 = st.columns(3)
+    m1.metric("左极限 f(0-0)", f"{left_lim:.2f}")
+    m2.metric("右极限 f(0+0)", f"{right_lim:.2f}", delta=f"{right_lim-left_lim:+.2f}（与左极限之差）",
+              delta_color="inverse" if not is_continuous else "normal")
+    m3.metric("左导数 f'₋(0)", f"{left_deriv:.2f}")
+    m4, m5, m6 = st.columns(3)
+    m4.metric("右导数 f'₊(0)", right_deriv_txt, delta=right_deriv_delta,
+              delta_color="inverse" if not is_differentiable else "normal")
+    
+    if is_differentiable and abs(b_val - 1.0) < 1e-6 and abs(a_val + 1.0) < 1e-6:
+        st.success("✅ **完全正确！** 当 a = -1，b = 1 时，函数在 x=0 处连续且可导，且 f'(0) = -1。\n\n"
+                   "解题过程：\n"
+                   "1. **先定连续**：lim(x→0⁻)e^{-x}=1，lim(x→0⁺)(x²+ax+b)=b，连续要求 b = 1；\n"
+                   "2. **再比导数**：左导数 f'₋(0) = lim(x→0⁻)(e^{-x}-1)/x = -1；"
+                   "右导数 f'₊(0) = lim(x→0⁺)(x²+ax+1-1)/x = a；\n"
+                   "3. **可导要求左右导数相等**：a = -1。\n\n"
+                   "最终结论：a = -1，b = 1。")
+    elif is_continuous:
+        st.warning("⚠️ 函数在 x=0 处连续（b=1），但左右导数不相等（a ≠ -1），函数在 x=0 处连续但不可导。"
+                   "\n\n💡 提示：拖动 a 滑块到 -1，即可满足可导条件。")
+    else:
+        st.error("❌ 函数在 x=0 处不连续，必然不可导。"
+                 "\n\n💡 提示：连续是可导的必要条件，请先拖动 b 滑块到 1 保证连续，再调整 a。")
+    
+    # 绘制函数图像
+    fig_ex10, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+    fig_ex10, (ax1, ax2) = prep_fig(fig_ex10, (ax1, ax2))
+    
+    x_left = np.linspace(-3, 0, 200)
+    x_right = np.linspace(0, 3, 200)
+    y_left = np.exp(-x_left)
+    y_right = x_right ** 2 + a_val * x_right + b_val
+    
+    ax1.plot(x_left, y_left, linewidth=2.5, color='#1f77b4', label=r"$e^{-x}\ (x\leq 0)$")
+    ax1.plot(x_right, y_right, linewidth=2.5, color='#ff7f0e', label=fr"$x^2+ax+b\ (x>0)$")
+    ax1.scatter([0], [1.0], color='#1f77b4', s=100, zorder=5, edgecolor='white', linewidth=1.5)
+    ax1.scatter([0], [b_val], color='#ff7f0e', s=100, zorder=5, edgecolor='white', linewidth=1.5)
+    
+    if is_continuous:
+        ax1.scatter([0], [1.0], color='green', s=120, zorder=6, edgecolor='white', linewidth=1.5, label="连续衔接点 (0,1)")
+    else:
+        ax1.plot([0, 0], [min(b_val, 1.0), max(b_val, 1.0)], 'r--', linewidth=2, alpha=0.7, label="断口")
+    
+    ax1.axhline(0, color='gray', linewidth=0.8)
+    ax1.axvline(0, color='gray', linewidth=0.8)
+    ax1.grid(alpha=0.3, linestyle='--')
+    ax1.legend(fontsize=10, loc='upper right')
+    ax1.set_xlabel('x', fontsize=12)
+    ax1.set_ylabel('f(x)', fontsize=12)
+    ax1.set_title('函数整体图像', fontsize=13)
+    ax1.set_xlim(-3, 3)
+    ax1.set_ylim(-1, 8)
+    
+    # 局部放大 x=0 附近
+    zoom_half = 1.5
+    x_zl = np.linspace(-zoom_half, 0, 200)
+    x_zr = np.linspace(0, zoom_half, 200)
+    y_zl = np.exp(-x_zl)
+    y_zr = x_zr ** 2 + a_val * x_zr + b_val
+    
+    ax2.plot(x_zl, y_zl, linewidth=2.5, color='#1f77b4')
+    ax2.plot(x_zr, y_zr, linewidth=2.5, color='#ff7f0e')
+    
+    # 画切线（仅在可导时显示）
+    if is_continuous:
+        x_tan = np.linspace(-zoom_half, zoom_half, 100)
+        y_tan_l = 1.0 + left_deriv * x_tan
+        y_tan_r = 1.0 + right_deriv * x_tan
+        ax2.plot(x_tan[x_tan <= 0], y_tan_l[x_tan <= 0], '--', linewidth=1.8, color='#1f77b4', alpha=0.7,
+                 label=fr"左切线，斜率={left_deriv:.1f}")
+        ax2.plot(x_tan[x_tan >= 0], y_tan_r[x_tan >= 0], '--', linewidth=1.8, color='#ff7f0e', alpha=0.7,
+                 label=fr"右切线，斜率={right_deriv:.1f}")
+    
+    ax2.scatter([0], [1.0], color='#1f77b4', s=100, zorder=5, edgecolor='white', linewidth=1.5)
+    ax2.scatter([0], [b_val], color='#ff7f0e', s=100, zorder=5, edgecolor='white', linewidth=1.5)
+    ax2.axhline(0, color='gray', linewidth=0.8)
+    ax2.axvline(0, color='gray', linewidth=0.8)
+    ax2.grid(alpha=0.3, linestyle='--')
+    if is_continuous:   # 不连续时右图没有切线，无图例可画，避免"no artists with labels"告警
+        ax2.legend(fontsize=10, loc='upper right')
+    ax2.set_xlabel('x', fontsize=12)
+    ax2.set_ylabel('f(x)', fontsize=12)
+    ax2.set_title('x=0 附近局部放大（看切线是否光滑衔接）', fontsize=13)
+    ax2.set_xlim(-zoom_half, zoom_half)
+    ax2.set_ylim(0, 3)
+    
+    fig_ex10.subplots_adjust(left=0.07, right=0.97, top=0.92, bottom=0.10, wspace=0.22)
+    safe_pyplot(fig_ex10, key="ex10_interactive")
+    
+    st.info("💡 拖动 a、b 滑块观察：\n"
+            "• b ≠ 1 时，x=0 处出现断口，函数不连续；\n"
+            "• b = 1 但 a ≠ -1 时，图像虽然接上了，但左右切线斜率不同，出现「折角」，连续但不可导；\n"
+            "• 只有当 a = -1、b = 1 时，左右切线斜率均为 -1，两条切线重合，函数在 x=0 处光滑衔接，此时可导。")
     
     st.markdown("---")
     st.info("""
