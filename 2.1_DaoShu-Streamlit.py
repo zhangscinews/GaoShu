@@ -944,54 +944,69 @@ elif page == "5. 几何意义：割线变切线✨":
     这就是导数几何意义的动态过程——**切线是割线的极限位置**。
     """)
     
-    # ===== 三、🌐 流畅动画演示：割线自动趋近切线（纯Streamlit原生，零依赖零报错）=====
+    # ===== 三、🌐 流畅动画演示：割线自动趋近切线（在原版本基础上修复优化）=====
     st.markdown("---")
     st.markdown("### 三、🌐 流畅动画演示：割线自动趋近切线")
     st.info("💡 下方自动循环演示Δx从2.0缩小到0.01的全过程，割线平滑转为切线；也可拖动上方滑块手动控制。")
 
-    # 自动播放状态初始化
+    import time
+    import io
+
+    # 自动播放状态初始化：默认暂停，打开先显示静态初始图
     if 'auto_play' not in st.session_state:
-        st.session_state.auto_play = True
+        st.session_state.auto_play = False
     if 'current_dx' not in st.session_state:
         st.session_state.current_dx = 2.0
+    if 'hold_frames' not in st.session_state:
+        st.session_state.hold_frames = 0
 
-    # 控制按钮
+    # 按钮用on_click回调，点击不触发整页重排闪烁
+    def start_play():
+        st.session_state.auto_play = True
+        st.session_state.hold_frames = 0
+        if st.session_state.current_dx <= 0.011:
+            st.session_state.current_dx = 2.0
+
+    def pause_play():
+        st.session_state.auto_play = False
+
+    # 控制按钮（固定宽度、固定位置，不随状态变文字/位置）
     col_btn1, col_btn2 = st.columns([1, 1])
     with col_btn1:
-        if st.button("⏸ 暂停自动播放", key="btn_pause"):
-            st.session_state.auto_play = False
-            st.rerun()
+        st.button("⏸ 暂停播放", key="btn_pause", on_click=pause_play, use_container_width=True)
     with col_btn2:
-        if st.button("▶ 开始自动播放", key="btn_play"):
-            st.session_state.auto_play = True
-            st.session_state.current_dx = 2.0
-            st.rerun()
+        st.button("▶ 开始自动播放", key="btn_play", on_click=start_play, use_container_width=True)
 
-    # 绘图占位符
+    # 三个固定占位符：图、数值、说明，全程不移动不重建
     anim_placeholder = st.empty()
     metric_placeholder = st.empty()
+    note_placeholder = st.empty()
 
-    # 自动播放逻辑：循环减小Δx，完全重合后停顿并显示说明，再重置循环
-    import time
-    while st.session_state.auto_play:
-        # 当前Δx（保证不小于0.01，避免除零）
-        dx = st.session_state.current_dx
-
-        # 计算当前割线数据
-        x_N_anim = x0 + dx
+    def draw_one_frame(dx_val, show_conclusion=False):
+        """绘制单帧：固定画布尺寸/边距/坐标范围，不忽大忽小"""
+        x_N_anim = x0 + dx_val
         y_N_anim = f(x_N_anim)
-        k_sec_anim = (y_N_anim - y0) / dx
+        k_sec_anim = (y_N_anim - y0) / dx_val
 
-        # 画图
-        fig_anim, ax_anim = plt.subplots(figsize=(8, 5))
-        fig_anim, ax_anim = prep_fig(fig_anim, ax_anim)
+        fig_anim, ax_anim = plt.subplots(figsize=(8, 5), dpi=120)
+        # 重合帧：结论文字放在图内右上角空白区域，不挡标题/图例/曲线
+        if show_conclusion:
+            ax_anim.text(0.98, 0.95,
+                         "★极限：割线与切线完全重合！\n"
+                         "Δx→0时，割线MN极限位置就是切线，\n"
+                         "割线斜率→切线斜率，\n"
+                         "即 $f'(x_0)=$ 切线斜率 $=\\tan\\alpha$",
+                         transform=ax_anim.transAxes, fontsize=11, ha='right', va='top', color='#B71C1C',
+                         bbox=dict(facecolor='#FFF9C4', edgecolor='#F9A825', boxstyle='round,pad=0.5', alpha=0.95))
+
+
         # 画曲线
         ax_anim.plot(x_plot, f(x_plot), linewidth=2.2, label=r"曲线 $y=f(x)$", color='#1f77b4')
-        # 画切线
+        # 画切线（范围和曲线一致，不会出界）
         x_tan_anim = np.linspace(np.min(x_plot), np.max(x_plot), 100)
         y_tan_anim = y0 + slope_tangent * (x_tan_anim - x0)
         ax_anim.plot(x_tan_anim, y_tan_anim, color='red', linewidth=2.2,
-                     label=fr"切线，斜率$k={slope_tangent:.3f}$")
+                     label=fr"切线，斜率$k={slope_tangent:.3f}$（即$f'({x0:.1f})$）")
         # 画割线
         x_sec_anim = np.linspace(x0 - 0.8, x_N_anim + 0.8, 100)
         y_sec_anim = y0 + k_sec_anim * (x_sec_anim - x0)
@@ -1007,45 +1022,78 @@ elif page == "5. 几何意义：割线变切线✨":
         ax_anim.plot([x_N_anim, x_N_anim], [y0, y_N_anim], 'k--', alpha=0.6, linewidth=1.2)
         ax_anim.annotate(r'$\Delta x$', ((x0 + x_N_anim) / 2, y0 - 0.2), fontsize=13, ha='center')
         ax_anim.annotate(r'$\Delta y$', (x_N_anim + 0.1, (y0 + y_N_anim) / 2), fontsize=13, va='center')
-        # 坐标轴美化
+        # 坐标轴美化（范围固定）
         ax_anim.axhline(0, color='gray', linewidth=0.8)
         ax_anim.axvline(0, color='gray', linewidth=0.8)
         ax_anim.grid(alpha=0.3, linestyle='--')
-        ax_anim.legend(fontsize=11, loc='upper left')
+        ax_anim.legend(fontsize=11, loc='upper left')  # 图例放回左上角
         ax_anim.set_ylim(bottom=np.min(all_y) - 0.5, top=np.max(all_y) + 0.5)
         ax_anim.set_xlim(np.min(x_plot) - 0.2, np.max(x_plot) + 0.2)
         ax_anim.set_xlabel('x', fontsize=12)
         ax_anim.set_ylabel('y', fontsize=12)
-        ax_anim.set_title(f"Δx = {dx:.2f}  割线斜率 = {k_sec_anim:.3f}  差值 = {k_sec_anim - slope_tangent:.3f}", fontsize=13)
+        # 标题固定宽度格式化，长度始终一致不顶动布局
+        ax_anim.set_title(
+            f"Δx = {dx_val:5.3f}   割线斜率 = {k_sec_anim:6.3f}   差值 = {k_sec_anim - slope_tangent:.4f}",
+            fontsize=12, pad=8
+        )
 
-        # 渲染到占位符
+        # 关键：key固定，永远替换同一张图，不堆叠新图
         with anim_placeholder:
-            safe_pyplot(fig_anim, key=f"anim_{dx:.2f}")
+            safe_pyplot(fig_anim, key="anim_secant_fixed")
+        return k_sec_anim
 
-        # ===== 判断是否为「完全重合」帧 =====
-        if dx <= 0.011:
-            # 重合帧：显示数值 + 文字说明，多停留 2.5 秒
-            with metric_placeholder:
-                c1, c2, c3 = st.columns(3)
-                c1.metric("当前Δx", f"{dx:.3f}")
-                c2.metric("割线斜率", f"{k_sec_anim:.3f}")
-                c3.metric("与切线差值", f"{k_sec_anim - slope_tangent:.4f}")
-                st.success("🎉 &zwnj;**割线与切线完全重合！**&zwnj; 当 Δx→0 时，割线 MN 的极限位置就是切线，"
-                           "割线斜率无限逼近切线斜率，即 f′(x₀) = 切线斜率 = tanα。")
-            time.sleep(10)                        # 重合处多停留 2.5 秒
-            st.session_state.current_dx = 2.0       # 停顿结束后再重新开始循环
-        else:
-            with metric_placeholder:
-                c1, c2, c3 = st.columns(3)
-                c1.metric("当前Δx", f"{dx:.2f}")
-                c2.metric("割线斜率", f"{k_sec_anim:.3f}")
-                c3.metric("与切线差值", f"{k_sec_anim - slope_tangent:.3f}")
-            st.session_state.current_dx = max(dx - 0.05, 0.01)   # 递减但不小于0.01，避免除零
-            time.sleep(0.08)
-
-    # 暂停状态显示提示
+    # 暂停/初始状态：渲染一帧静态图，不会空屏
     if not st.session_state.auto_play:
-        st.success("✅ 自动播放已暂停，可拖动上方Δx滑块手动控制查看细节。")
+        dx = st.session_state.current_dx
+        is_conclusion = dx <= 0.011
+        k_sec = draw_one_frame(dx, show_conclusion=is_conclusion)
+        with metric_placeholder:
+            c1, c2, c3 = st.columns(3)
+            c1.metric("当前Δx", f"{dx:.3f}")
+            c2.metric("割线斜率", f"{k_sec:.3f}")
+            c3.metric("与切线差值", f"{k_sec - slope_tangent:.4f}")
+        with note_placeholder:
+            if is_conclusion:
+                st.success("🎉 割线与切线完全重合！当Δx→0时，割线MN的极限位置就是切线。")
+            else:
+                st.success("✅ 自动播放已暂停，可拖动上方Δx滑块手动控制查看细节。")
+
+    # 自动播放循环：逐帧替换，不新增组件
+    while st.session_state.auto_play:
+        dx = st.session_state.current_dx
+        is_conclusion = dx <= 0.011
+
+        # 重合帧分小步停留10秒，期间每0.25秒检查一次暂停状态，点暂停立刻响应
+        if is_conclusion:
+            if st.session_state.hold_frames <= 0:
+                st.session_state.hold_frames = 20  # 20帧×0.25秒=5秒停留
+            st.session_state.hold_frames -= 1
+            k_sec_anim = draw_one_frame(dx, show_conclusion=True)
+        else:
+            k_sec_anim = draw_one_frame(dx, show_conclusion=False)
+
+        # 数值固定位置刷新
+        with metric_placeholder:
+            c1, c2, c3 = st.columns(3)
+            c1.metric("当前Δx", f"{dx:.3f}")
+            c2.metric("割线斜率", f"{k_sec_anim:.3f}")
+            c3.metric("与切线差值", f"{k_sec_anim - slope_tangent:.4f}")
+
+        # 说明文字
+        with note_placeholder:
+            if is_conclusion:
+                st.success("🎉 割线与切线完全重合！当Δx→0时，割线MN的极限位置就是切线，割线斜率无限逼近切线斜率。")
+            else:
+                note_placeholder.empty()
+
+        # 推进下一帧
+        if is_conclusion:
+            time.sleep(0.25)
+            if st.session_state.hold_frames <= 0:
+                st.session_state.current_dx = 2.0  # 停留结束回到起点
+        else:
+            st.session_state.current_dx = max(dx - 0.05, 0.01)  # 不小于0.01，避免除零
+            time.sleep(0.08)
 
 
 # 6. 切线与法线方程
