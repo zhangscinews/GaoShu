@@ -1001,104 +1001,303 @@ elif page == "6. 切线与法线方程":
         safe_pyplot(fig, key="tangent_normal_para")
 
 
-# 7. 课堂小结与练习
 elif page == "7. 课堂小结与练习":
     st.title("7. 课堂小结与课堂练习")
+
+    # ===== 初始化答题状态 =====
+    if 'quiz_stats' not in st.session_state:
+        st.session_state.quiz_stats = {
+            'q1': {'answered': False, 'correct': False, 'topic': '可导与连续的关系'},
+            'q2': {'answered': False, 'correct': False, 'topic': '可导与连续的关系'},
+            'q3': {'answered': False, 'correct': False, 'topic': '基本求导公式'},
+            'q4': {'answered': False, 'correct': False, 'topic': '导数定义与等价形式'},
+            'q5': {'answered': False, 'correct': False, 'topic': '基本求导公式'},
+            'q6': {'answered': False, 'correct': False, 'topic': '几何意义与切线斜率'},
+            'q7': {'answered': False, 'correct': False, 'topic': '几何意义与切线方程'},
+            'q8': {'answered': False, 'correct': False, 'topic': '单侧导数与可导判据'},
+        }
+    if 'wrong_list' not in st.session_state:
+        st.session_state.wrong_list = []
+
+    # ===== 一、核心知识点总结 =====
     st.markdown("---")
-    
     st.markdown("### 一、本节课核心知识点总结")
-    st.markdown("""
-    1. **一个定义**：导数是函数增量与自变量增量之比的极限，本质是瞬时变化率；
-    2. **一个方法**：用定义求导三步法——一差、二比、三极限；
-    3. **一个充要条件**：某点可导 $\\iff$ 左右导数都存在且相等；
-    4. **一个关系**：可导必连续，连续不一定可导；
-    5. **一个几何意义**：导数是切线斜率，切线是割线的极限位置；
-    6. **两个方程**：切线方程、法线方程公式。
+    st.markdown(r"""
+    1. &zwnj;**一个定义**&zwnj;：导数是函数增量与自变量增量之比的极限，本质是瞬时变化率；
+    2. &zwnj;**一个方法**&zwnj;：用定义求导三步法——一差、二比、三极限；
+    3. &zwnj;**一个充要条件**&zwnj;：某点可导 $\iff$ 左右导数都存在且相等；
+    4. &zwnj;**一个关系**&zwnj;：可导必连续，连续不一定可导；
+    5. &zwnj;**一个几何意义**&zwnj;：导数是切线斜率，切线是割线的极限位置；
+    6. &zwnj;**两个方程**&zwnj;：切线方程、法线方程公式。
     """)
-    
-    st.markdown("### 二、课堂小练习")
-    
+
+    # ===== 二、知识结构图谱 =====
+    st.markdown("---")
+    st.markdown("### 二、本节知识结构图谱")
+    st.info("箭头方向代表逻辑依赖：从旧知出发，经过定义生成、判据、意义与方法，最后通向后续章节。双向箭头表示充要条件，虚线箭头表示跨节衔接。")
+
+    from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+
+    @st.cache_data
+    def render_kg_png(_cfg=2, dpi=140):
+        import io
+        plt.rcParams['font.sans-serif'] = [
+            'SimHei', 'Microsoft YaHei', 'Noto Sans CJK SC',
+            'WenQuanYi Zen Hei', 'DejaVu Sans'
+        ]
+        plt.rcParams['axes.unicode_minus'] = False
+        plt.rcParams['mathtext.fontset'] = 'dejavusans'
+        plt.rcParams['mathtext.fallback'] = None
+
+        fig, ax = plt.subplots(figsize=(15, 8.5))
+        ax.set_xlim(0, 15)
+        ax.set_ylim(0, 9)
+        ax.axis('off')
+
+        C_OLD = '#E8F0FE'; E_OLD = '#1565C0'
+        C_DEF = '#003366'; E_DEF = '#001a33'
+        C_JUD = '#FFF3E0'; E_JUD = '#E65100'
+        C_GEO = '#E8F5E9'; E_GEO = '#2E7D32'
+        C_FOR = '#FFFDE7'; E_FOR = '#F9A825'
+        C_REL = '#FFEBEE'; E_REL = '#C62828'
+
+        nodes = [
+            (1.5, 7.6,  "函数极限\n左右极限",         C_OLD, E_OLD, False, 1.9, 0.9),
+            (3.9, 7.6,  "函数增量\n$\\Delta y$\n连续性", C_OLD, E_OLD, False, 1.9, 1.1),
+            (6.3, 7.6,  "无穷小\n等价替换",             C_OLD, E_OLD, False, 1.9, 0.9),
+            (3.9, 6.0,  "平均变化率\n$\\frac{\\Delta y}{\\Delta x}$", C_DEF, E_DEF, True, 2.5, 1.0),
+            (3.9, 4.4,  "导数定义\n$f'(x_0)=\\lim_{\\Delta x\\to 0}\\frac{\\Delta y}{\\Delta x}$",
+                         C_DEF, E_DEF, True, 3.4, 1.1),
+            (1.0, 2.6,  "左导数\n$f'_-(x_0)$",     C_JUD, E_JUD, False, 1.8, 0.9),
+            (3.9, 2.6,  "可导充要条件\n左右导数存在且相等", C_JUD, E_JUD, False, 2.6, 0.9),
+            (6.8, 2.6,  "右导数\n$f'_+(x_0)$",     C_JUD, E_JUD, False, 1.8, 0.9),
+            (9.5, 2.6,  "导函数\n$f'(x)$",         C_JUD, E_JUD, False, 2.0, 0.9),
+            (9.5, 6.0,  "瞬时速度\n（物理意义）",   C_GEO, E_GEO, False, 2.1, 0.9),
+            (12.3, 6.0, "切线斜率\n$\\tan\\alpha$\n（几何意义）", C_GEO, E_GEO, False, 2.2, 1.1),
+            (12.3, 4.4, "三步求导法\n一差 二比 三极限", C_FOR, E_FOR, False, 2.3, 0.95),
+            (12.3, 2.6, "基本求导公式\n$(x^n)'=nx^{n-1}$\n$(a^x)'=a^x\\ln a$, $(e^x)'=e^x$",
+                         C_FOR, E_FOR, False, 2.9, 1.15),
+            (8.2, 0.9,  "可导一定连续\n连续未必可导",
+                         C_REL, E_REL, False, 2.8, 0.95),
+            (12.0, 0.9, "微分\n$dy=f'(x)dx$\n→ 下一节", C_REL, E_REL, False, 2.4, 1.0),
+        ]
+
+        node_pos = {}
+        for i, (x, y, txt, fc, ec, dark, w, h) in enumerate(nodes):
+            tc = 'white' if dark else '#1a1a1a'
+            box = FancyBboxPatch(
+                (x - w/2, y - h/2), w, h,
+                boxstyle="round,pad=0.08",
+                linewidth=2.2 if dark else 1.4,
+                edgecolor=ec, facecolor=fc, zorder=3
+            )
+            ax.add_patch(box)
+            ax.text(x, y, txt, ha='center', va='center', fontsize=10.5,
+                    color=tc, fontweight='bold' if dark else 'normal',
+                    linespacing=1.3, zorder=4)
+            node_pos[i] = (x, y, w, h)
+
+        import math
+        def draw_arrow(i, j, color='#555', lw=1.4, ls='-', mut=16, rad=0.0):
+            x1, y1, w1, h1 = node_pos[i]
+            x2, y2, w2, h2 = node_pos[j]
+            dx, dy = x2 - x1, y2 - y1
+            dist = math.hypot(dx, dy)
+            if dist == 0: return
+            ux, uy = dx/dist, dy/dist
+            sx = x1 + ux * (w1/2 + 0.02)
+            sy = y1 + uy * (h1/2 + 0.02)
+            ex = x2 - ux * (w2/2 + 0.02)
+            ey = y2 - uy * (h2/2 + 0.02)
+            arr = FancyArrowPatch(
+                (sx, sy), (ex, ey),
+                arrowstyle='-|>', mutation_scale=mut,
+                color=color, linewidth=lw, linestyle=ls,
+                connectionstyle=f"arc3,rad={rad}", zorder=2
+            )
+            ax.add_patch(arr)
+
+        draw_arrow(0, 3, color=E_OLD, lw=1.6)
+        draw_arrow(1, 3, color=E_OLD, lw=1.6)
+        draw_arrow(2, 3, color=E_OLD, lw=1.6, rad=-0.22)
+        draw_arrow(3, 4, color=C_DEF, lw=2.4, mut=22)
+        draw_arrow(4, 5, color=E_JUD, lw=1.6)
+        draw_arrow(4, 6, color=E_JUD, lw=1.6)
+        draw_arrow(4, 7, color=E_JUD, lw=1.6, rad=0.2)
+        draw_arrow(5, 6, color=E_JUD, ls='--')
+        draw_arrow(7, 6, color=E_JUD, ls='--')
+        draw_arrow(6, 8, color=E_JUD, lw=1.6)
+        draw_arrow(4, 9,  color=E_GEO, lw=1.6, rad=-0.28)
+        draw_arrow(4, 10, color=E_GEO, lw=1.6, rad=0.25)
+        draw_arrow(10, 11, color=E_FOR, lw=1.6)
+        draw_arrow(10, 12, color=E_FOR, lw=1.6)
+        draw_arrow(4, 11, color=E_FOR, ls=':', rad=0.32)
+        draw_arrow(11, 12, color=E_FOR, lw=1.6)
+        draw_arrow(6, 13, color=E_REL, lw=1.6)
+        draw_arrow(8, 13, color=E_REL, lw=1.6)
+        draw_arrow(8, 14, color=E_REL, ls='--', rad=-0.18)
+        draw_arrow(12, 14, color=E_REL, ls='--')
+
+        ax.text(7.5, 8.55, "§2.1 导数的概念及其几何意义 · 知识结构",
+                ha='center', fontsize=17, fontweight='bold', color=C_DEF)
+
+        legend_items = [
+            (E_OLD, '-',  '旧知依赖'),
+            (C_DEF, '-',  '概念主干（核心）'),
+            (E_JUD, '-',  '单侧判据'),
+            (E_GEO, '-',  '物理/几何意义'),
+            (E_FOR, '-',  '求导方法'),
+            (E_REL, '--', '关系与后续接口（虚线=跨节）'),
+        ]
+        for k, (col, ls_, lab) in enumerate(legend_items):
+            x0 = 0.3
+            y0 = 0.25 + (5 - k) * 0.22
+            ax.plot([x0, x0+0.55], [y0, y0], color=col, linewidth=2.2, linestyle=ls_)
+            ax.text(x0+0.65, y0, lab, va='center', fontsize=10, color='#222')
+
+        fig.subplots_adjust(left=0.01, right=0.99, top=0.94, bottom=0.01)
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png', dpi=dpi, bbox_inches='tight', facecolor='white')
+        plt.close(fig)
+        buf.seek(0)
+        return buf
+
+    buf_kg = render_kg_png()
+    st.image(buf_kg, width='stretch')
+    st.caption(r"📌 读图提示：深蓝色框是本节主干；红色框是易错点——「可导⇒连续」是单向蕴含，必须配上反例（$|x|$、$\sqrt[3]{x}$ 在 $x=0$ 处）。最右下虚线箭头连向下一节「微分」。")
+
+    # ===== 三、公式速查卡（新增）=====
+    st.markdown("---")
+    with st.expander("📖 基本求导公式速查卡（点击展开）", expanded=False):
+        st.markdown("#### 一、常数与幂函数")
+        col_a, col_b = st.columns(2)
+        with col_a:
+            st.latex(r"(C)' = 0 \quad \text{（常数的导数为0）}")
+            st.latex(r"(x^n)' = n x^{n-1}")
+            st.latex(r"(x)' = 1")
+        with col_b:
+            st.latex(r"(x^2)' = 2x")
+            st.latex(r"\left(\frac{1}{x}\right)' = -\frac{1}{x^2}")
+            st.latex(r"(\sqrt{x})' = \frac{1}{2\sqrt{x}}")
+
+        st.markdown("#### 二、指数函数与对数函数")
+        col_c, col_d = st.columns(2)
+        with col_c:
+            st.latex(r"(a^x)' = a^x \ln a \quad (a>0, a\neq 1)")
+            st.latex(r"(e^x)' = e^x")
+        with col_d:
+            st.latex(r"(\log_a x)' = \frac{1}{x\ln a}")
+            st.latex(r"(\ln x)' = \frac{1}{x}")
+
+        st.markdown("#### 三、三角函数")
+        col_e, col_f = st.columns(2)
+        with col_e:
+            st.latex(r"(\sin x)' = \cos x")
+            st.latex(r"(\cos x)' = -\sin x")
+        with col_f:
+            st.latex(r"(\tan x)' = \sec^2 x")
+            st.latex(r"(\cot x)' = -\csc^2 x")
+
+        st.markdown("#### 四、切线与法线方程（在 $x=x_0$ 处）")
+        st.latex(r"\text{切线方程：}\quad y - f(x_0) = f'(x_0)(x - x_0)")
+        st.latex(r"\text{法线方程：}\quad y - f(x_0) = -\frac{1}{f'(x_0)}(x - x_0) \quad (f'(x_0)\neq 0)")
+
+    # ===== 四、课堂练习题 =====
+    st.markdown("---")
+    st.markdown("### 三、课堂小练习")
+    st.info("💡 答完所有题目后，页面下方会自动生成你的&zwnj;**知识掌握度雷达图**&zwnj;、&zwnj;**错题本**&zwnj;和&zwnj;**一键学习报告**&zwnj;。")
+
+    # 题目1
     q1 = st.radio(
-        "1. 函数f(x)在x₀处连续是在该点可导的（  ）",
+        "1. 函数f(x)在x₀处连续是在该点可导的（ ）",
         ["A. 充分但不必要条件", "B. 必要但不充分条件", "C. 充分必要条件", "D. 既不充分也不必要条件"],
-        index=None,
-        key="q1"
+        index=None, key="q1"
     )
     if q1:
         if q1 == "B. 必要但不充分条件":
             st.success("✅ 回答正确！可导必连续，连续不一定可导。")
+            st.session_state.quiz_stats['q1']['correct'] = True
         else:
             st.error("❌ 不对哦，回忆可导与连续的关系定理。")
-    
+            st.session_state.quiz_stats['q1']['correct'] = False
+        st.session_state.quiz_stats['q1']['answered'] = True
+
     st.markdown("---")
+    # 题目2
     q2 = st.radio(
-        "2. 函数f(x)=|x|在x=0处（  ）",
+        "2. 函数f(x)=|x|在x=0处（ ）",
         ["A. 连续且可导", "B. 连续但不可导", "C. 不连续但可导", "D. 不连续也不可导"],
-        index=None,
-        key="q2"
+        index=None, key="q2"
     )
     if q2:
         if q2 == "B. 连续但不可导":
             st.success("✅ 回答正确！f(x)=|x|在0点是尖点，左右导数不相等，不可导。")
+            st.session_state.quiz_stats['q2']['correct'] = True
         else:
             st.error("❌ 不对哦，回忆我们讲过的尖点反例。")
-    
+            st.session_state.quiz_stats['q2']['correct'] = False
+        st.session_state.quiz_stats['q2']['answered'] = True
+
     st.markdown("---")
+    # 题目3
     q3 = st.text_input("3. 用定义求f(x)=x³在x=1处的导数f'(1) = ?（输入数字即可）", key="q3")
     if q3:
         if q3.strip() == "3":
             st.success("✅ 回答正确！f'(x)=3x²，因此f'(1)=3。")
+            st.session_state.quiz_stats['q3']['correct'] = True
         else:
             st.error("❌ 答案是3，回忆幂函数求导公式或用三步法计算。")
+            st.session_state.quiz_stats['q3']['correct'] = False
+        st.session_state.quiz_stats['q3']['answered'] = True
 
-    # ==============================================
-    # 新增练习题（保留原有3道题不变，在此基础上增加）
-    # ==============================================
     st.markdown("---")
     st.markdown("#### 🎯 进阶练习")
 
-    # 练习4：导数定义的等价形式
+    # 题目4
     st.markdown("---")
     q4 = st.radio(
-        "4. 下列极限中，等于 $f'(x_0)$ 的是（  ）",
+        "4. 下列极限中，等于 $f'(x_0)$ 的是（ ）",
         [
-            "A. $\\lim\\limits_{h\\to 0}\\dfrac{f(x_0+2h)-f(x_0)}{h}$",
-            "B. $\\lim\\limits_{h\\to 0}\\dfrac{f(x_0)-f(x_0-h)}{h}$",
-            "C. $\\lim\\limits_{h\\to 0}\\dfrac{f(x_0+h)-f(x_0-h)}{h}$",
-            "D. $\\lim\\limits_{h\\to 0}\\dfrac{f(x_0+h)+f(x_0-h)-2f(x_0)}{h}$"
+            "A. $\\lim_{h\\to 0}\\frac{f(x_0+2h)-f(x_0)}{h}$",
+            "B. $\\lim_{h\\to 0}\\frac{f(x_0)-f(x_0-h)}{h}$",
+            "C. $\\lim_{h\\to 0}\\frac{f(x_0+h)-f(x_0-h)}{h}$",
+            "D. $\\lim_{h\\to 0}\\frac{f(x_0+h)+f(x_0-h)-2f(x_0)}{h}$"
         ],
-        index=None,
-        key="q4"
+        index=None, key="q4"
     )
     if q4:
         if q4.startswith("B"):
-            st.success("✅ 回答正确！令t=-h，$\\lim\\limits_{h\\to 0}\\dfrac{f(x_0)-f(x_0-h)}{h}=\\lim\\limits_{t\\to 0}\\dfrac{f(x_0+t)-f(x_0)}{t}=f'(x_0)$，正好是导数的增量形式。")
+            st.success("✅ 回答正确！令t=-h，$\\lim_{h\\to 0}\\frac{f(x_0)-f(x_0-h)}{h}=\\lim_{t\\to 0}\\frac{f(x_0+t)-f(x_0)}{t}=f'(x_0)$，正好是导数的增量形式。")
             with st.expander("点击查看其他选项错在哪里"):
                 st.markdown("""
                 - A选项结果是 $2f'(x_0)$，分子是2h的增量，分母是h，差了系数2；
                 - C选项结果是 $2f'(x_0)$，分子是从x₀-h到x₀+h共2h的增量，分母是h，差了系数2；
                 - D选项结果是0，分子是二阶增量，除以h极限为0。
                 """)
+            st.session_state.quiz_stats['q4']['correct'] = True
         else:
             st.error("❌ 不对哦，回忆导数增量形式的定义，分子分母的增量必须对应。")
+            st.session_state.quiz_stats['q4']['correct'] = False
+        st.session_state.quiz_stats['q4']['answered'] = True
 
-    # 练习5：常数函数导数
+    # 题目5
     st.markdown("---")
     q5 = st.radio(
-        "5. 常数函数 $f(x)=5$ 的导数 $f'(x)$ 等于（  ）",
+        "5. 常数函数 $f(x)=5$ 的导数 $f'(x)$ 等于（ ）",
         ["A. 5", "B. 0", "C. 1", "D. 不存在"],
-        index=None,
-        key="q5"
+        index=None, key="q5"
     )
     if q5:
         if q5 == "B. 0":
             st.success("✅ 回答正确！常数的增量恒为0，差商为0，极限为0，因此常数的导数是0——常数函数不变化，变化率自然为0。")
+            st.session_state.quiz_stats['q5']['correct'] = True
         else:
             st.error("❌ 不对哦，回忆我们讲过的常数函数求导例题，常数不随x变化，变化率是0。")
+            st.session_state.quiz_stats['q5']['correct'] = False
+        st.session_state.quiz_stats['q5']['answered'] = True
 
-    # 练习6：滑块交互实践题（猜导数值）
+    # 题目6 交互实践题
     st.markdown("---")
-    # ★引入 5（第一节 第 44 分钟）｜「7. 课堂小结与课堂练习」：交互实践题「猜一猜 x=1 处的导数是多少」
     st.markdown("##### 🎮 交互实践题：猜一猜x=1处的导数是多少？")
     st.markdown("拖动下方滑块选择你猜测的数值，提交后可以看到真实导数值和你的误差：")
     guess_slope = st.slider("你猜测 $f(x)=x^2$ 在x=1处的导数值是：", min_value=0.0, max_value=4.0, value=1.0, step=0.1, key="q6_slider")
@@ -1108,12 +1307,15 @@ elif page == "7. 课堂小结与练习":
         error = abs(guess_slope - true_slope)
         if error < 0.01:
             st.success(f"🎉 完全正确！f'(1)=2.0，你的猜测值是{guess_slope:.1f}，误差{error:.3f}，和真实值完全一致！")
+            st.session_state.quiz_stats['q6']['correct'] = True
         elif error < 0.5:
             st.info(f"很接近了！真实值是2.0，你的猜测值是{guess_slope:.1f}，误差{error:.3f}，再回忆一下幂函数求导公式：$(x^2)'=2x$。")
+            st.session_state.quiz_stats['q6']['correct'] = False
         else:
             st.warning(f"差距有点大哦！真实值是2.0，你的猜测值是{guess_slope:.1f}，误差{error:.3f}。记住：抛物线在x=1处的切线斜率是2，对应切线方程是y=2x-1。")
-        
-        # 绘制图像展示
+            st.session_state.quiz_stats['q6']['correct'] = False
+        st.session_state.quiz_stats['q6']['answered'] = True
+
         fig_q6, ax_q6 = plt.subplots(figsize=(8,5))
         fig_q6, ax_q6 = prep_fig(fig_q6, ax_q6)
         x_q6 = np.linspace(-1, 3, 400)
@@ -1130,45 +1332,232 @@ elif page == "7. 课堂小结与练习":
         ax_q6.set_ylabel('y', fontsize=12)
         ax_q6.set_title("抛物线在(1,1)处的切线", fontsize=13)
         ax_q6.set_ylim(-1, 5)
-
         safe_pyplot(fig_q6, key="guess_tangent_q6")
 
-    # ★引入 10（第二节 第 42 分钟）｜「7. 课堂练习」练习 7、8：当堂核对切线方程与分段函数可导性判断
-    # 练习7：切线方程计算
+    # 题目7 切线方程
     st.markdown("---")
     q7 = st.radio(
-        "7. 曲线 $y=x^2$ 在点 $(2,4)$ 处的切线方程是（  ）",
+        "7. 曲线 $y=x^2$ 在点 $(2,4)$ 处的切线方程是（ ）",
         ["A. $y=4x-4$", "B. $y=2x$", "C. $y=4x+4$", "D. $y=2x+2$"],
-        index=None,
-        key="q7"
+        index=None, key="q7"
     )
     if q7:
         if q7.startswith("A"):
             st.success("✅ 回答正确！f'(x)=2x，f'(2)=4，代入点斜式：y-4=4(x-2)，整理得y=4x-4。")
+            st.session_state.quiz_stats['q7']['correct'] = True
         else:
             st.error("❌ 不对哦，先求切点处的导数值得到斜率，再代入点斜式公式计算。")
             st.info("提示：点斜式方程是$y-y_0 = f'(x_0)(x-x_0)$，x=2处导数f'(2)=4，y0=4，代入计算即可。")
+            st.session_state.quiz_stats['q7']['correct'] = False
+        st.session_state.quiz_stats['q7']['answered'] = True
 
-    # 练习8：可导性判断（分段函数）
+    # 题目8 分段函数可导性
     st.markdown("---")
     q8 = st.radio(
-        "8. 设函数 $f(x)=\\begin{cases}x^2, & x\\leq1 \\\\ ax+b, & x>1\\end{cases}$ 在x=1处可导，则a、b的值为（  ）",
+        "8. 设函数 $f(x)=\\begin{cases}x^2, & x\\leq1 \\\\ ax+b, & x>1\\end{cases}$ 在x=1处可导，则a、b的值为（ ）",
         ["A. a=1, b=2", "B. a=2, b=-1", "C. a=2, b=1", "D. a=-2, b=1"],
-        index=None,
-        key="q8"
+        index=None, key="q8"
     )
     if q8:
         if q8.startswith("B"):
             st.success("✅ 回答正确！可导必连续，且左右导数相等：")
             with st.expander("点击查看完整推导过程"):
                 st.markdown("""
-                1. **连续性条件**：x=1处左极限=右极限=函数值，即$1^2 = a\\cdot1 + b$，得 $a+b=1$；
-                2. **可导性条件**：左导数=右导数，x=1处左导数f'_-(1)=2×1=2，右导数f'_+(1)=a，因此a=2；
+                1. &zwnj;**连续性条件**&zwnj;：x=1处左极限=右极限=函数值，即$1^2 = a\\cdot1 + b$，得 $a+b=1$；
+                2. &zwnj;**可导性条件**&zwnj;：左导数=右导数，x=1处左导数f'_-(1)=2×1=2，右导数f'_+(1)=a，因此a=2；
                 3. 代入a=2到连续性条件，得b=1-a=-1。
                 因此a=2, b=-1，选B。
                 """)
+            st.session_state.quiz_stats['q8']['correct'] = True
         else:
             st.error("❌ 不对哦，分段函数在分界点可导需要同时满足两个条件：连续（左右极限相等）、左右导数相等。")
+            st.session_state.quiz_stats['q8']['correct'] = False
+        st.session_state.quiz_stats['q8']['answered'] = True
+
+    # ===== 五、学情分析（答完所有题后显示）=====
+    answered_count = sum(1 for q in st.session_state.quiz_stats.values() if q['answered'])
+    if answered_count == 8:
+        st.markdown("---")
+        st.markdown("### 四、📊 你的学习掌握度分析")
+
+        # 统计各知识点正确率
+        topics = {
+            '导数定义与本质': ['q3', 'q4', 'q5'],
+            '单侧导数与可导判据': ['q8'],
+            '可导与连续的关系': ['q1', 'q2'],
+            '几何意义与切线方程': ['q6', 'q7'],
+        }
+        topic_scores = {}
+        for topic_name, q_ids in topics.items():
+            correct_cnt = sum(1 for qid in q_ids if st.session_state.quiz_stats[qid]['correct'])
+            topic_scores[topic_name] = round(correct_cnt / len(q_ids) * 100, 1)
+
+        # 画雷达图
+        @st.cache_data
+        def render_radar(_cfg=8, scores_json=None, dpi=130):
+            import io
+            import math
+            plt.rcParams['font.sans-serif'] = [
+                'SimHei', 'Microsoft YaHei', 'Noto Sans CJK SC',
+                'WenQuanYi Zen Hei', 'Arial Unicode MS', 'DejaVu Sans'
+            ]
+            plt.rcParams['axes.unicode_minus'] = False
+            plt.rcParams['mathtext.fontset'] = 'dejavusans'
+
+            labels = list(scores_json.keys())
+            values = list(scores_json.values())
+            N = len(labels)
+            angles = [n / float(N) * 2 * math.pi for n in range(N)]
+            angles += angles[:1]
+            values_closed = values + values[:1]
+
+            # 横向加宽画布，给左右长标签留足空间
+            fig = plt.figure(figsize=(9.0, 7.0))
+            # 极坐标区手动定位，保证正圆：宽高比匹配fig尺寸
+            # [left, bottom, width, height]  宽0.5/高0.65 ≈ 7/9，和fig高宽比一致→正圆
+            ax = fig.add_axes([0.26, 0.18, 0.48, 0.62], polar=True)
+
+            ax.set_theta_offset(math.pi / 2)
+            ax.set_theta_direction(-1)
+            ax.set_rlabel_position(0)
+
+            plt.ylim(0, 100)
+            plt.xticks(angles[:-1], [""] * N)
+            plt.yticks([20, 40, 60, 80, 100], ["20%", "40%", "60%", "80%", "100%"],
+                       color="#999", fontsize=10)
+            ax.spines['polar'].set_color('#666')
+            ax.spines['polar'].set_linewidth(1.0)
+            ax.grid(color='#bbb', linewidth=0.8, alpha=0.7)
+
+            # 折线与填充
+            ax.plot(angles, values_closed, linewidth=2.5, color='#003366', solid_capstyle='round')
+            ax.fill(angles, values_closed, color='#003366', alpha=0.22)
+
+            # ---- 百分比数字：圆周内侧，不和外标签接触 ----
+            for angle, value in zip(angles[:-1], values):
+                if value >= 95:
+                    r = value - 12
+                elif value >= 75:
+                    r = value - 8
+                elif value <= 5:
+                    r = value + 16
+                else:
+                    r = value + 6
+                ax.text(angle, r, f"{value}%", ha='center', va='center',
+                        fontsize=13, color='#C62828', fontweight='bold',
+                        bbox=dict(facecolor='white', edgecolor='none', alpha=0.85, pad=2))
+
+            # ---- 分类标签：紧贴圆边，按方向对齐，完全不超出画布 ----
+            # 圆边界坐标：左x=0.26，右x=0.26+0.48=0.74，上y=0.18+0.62=0.80，下y=0.18
+            fig.text(0.50, 0.84, labels[0], ha='center', va='center', fontsize=14, color='#333')  # 顶部：圆上0.04
+            fig.text(0.76, 0.49, labels[1], ha='left',   va='center', fontsize=14, color='#333')  # 右侧：圆右0.02，左对齐向右伸
+            fig.text(0.50, 0.13, labels[2], ha='center', va='center', fontsize=14, color='#333')  # 底部：圆下0.05，紧贴
+            fig.text(0.24, 0.49, labels[3], ha='right',  va='center', fontsize=14, color='#333')  # 左侧：圆左0.02，右对齐向左伸
+
+            buf = io.BytesIO()
+            fig.savefig(buf, format='png', dpi=dpi, facecolor='white')
+            plt.close(fig)
+            buf.seek(0)
+            return buf
+
+
+        buf_radar = render_radar(scores_json=topic_scores)
+        st.image(buf_radar, width=500)
+
+        # 总体评价
+        total_correct = sum(1 for q in st.session_state.quiz_stats.values() if q['correct'])
+        total_rate = round(total_correct / 8 * 100, 1)
+        if total_rate >= 87.5:
+            st.success(f"🎉 优秀！总正确率 {total_rate}%（{total_correct}/8），本节知识掌握扎实！")
+        elif total_rate >= 62.5:
+            st.info(f"👍 良好！总正确率 {total_rate}%（{total_correct}/8），注意巩固雷达图中分数较低的知识点。")
+        else:
+            st.warning(f"📚 需要加强！总正确率 {total_rate}%（{total_correct}/8），建议重看错题本和对应知识点讲解。")
+
+        # ===== 错题本 =====
+        st.markdown("---")
+        st.markdown("#### 📕 错题本")
+        wrong_questions = []
+        q_texts = {
+            'q1': ("第1题", "函数f(x)在x₀处连续是可导的什么条件？", "B. 必要但不充分条件", "可导必连续，连续不一定可导。"),
+            'q2': ("第2题", "函数f(x)=|x|在x=0处的连续性与可导性", "B. 连续但不可导", "|x|在0点是尖点，左右导数不相等。"),
+            'q3': ("第3题", "f(x)=x³在x=1处的导数", "3", "f'(x)=3x²，f'(1)=3。"),
+            'q4': ("第4题", "导数定义的等价极限形式", "B选项", "只有B选项的分子分母增量严格对应Δx→0时的导数定义。"),
+            'q5': ("第5题", "常数函数f(x)=5的导数", "B. 0", "常数的增量恒为0，导数为0。"),
+            'q6': ("第6题", "f(x)=x²在x=1处的切线斜率", "2.0", "f'(x)=2x，f'(1)=2，切线方程y=2x-1。"),
+            'q7': ("第7题", "y=x²在(2,4)处的切线方程", "A. y=4x-4", "f'(2)=4，点斜式y-4=4(x-2)得y=4x-4。"),
+            'q8': ("第8题", "分段函数在x=1处可导求a、b", "B. a=2, b=-1", "连续得a+b=1，可导得a=2，故b=-1。"),
+        }
+        for qid, stat in st.session_state.quiz_stats.items():
+            if stat['answered'] and not stat['correct']:
+                wrong_questions.append((qid, q_texts[qid]))
+
+        if wrong_questions:
+            for qid, (qnum, qtxt, ans, exp) in wrong_questions:
+                with st.expander(f"❌ {qnum}：{qtxt[:30]}...", expanded=False):
+                    st.markdown(f"&zwnj;**正确答案**&zwnj;：{ans}")
+                    st.markdown(f"&zwnj;**解析**&zwnj;：{exp}")
+            st.info("💡 建议：先遮住答案重做错题，确认掌握后再打开公式速查卡回顾公式。")
+        else:
+            st.success("🎊 恭喜！全部答对，没有错题！")
+
+        # ===== 一键学习报告 =====
+        st.markdown("---")
+        st.markdown("#### 📋 一键学习报告（可复制保存）")
+        weak_topics = [t for t, s in topic_scores.items() if s < 70]
+        report_lines = [
+            "=" * 50,
+            "《导数的概念及其几何意义》课堂练习报告",
+            "=" * 50,
+            f"总正确率：{total_rate}%（答对 {total_correct}/8 题）",
+            "",
+            "各知识模块掌握度：",
+        ]
+        # 找到最长的模块名长度，用全角空格统一补齐，保证进度条对齐
+        max_name_len = max(len(t) for t in topic_scores.keys())
+        for t, s in topic_scores.items():
+            # 用中文全角空格(\u3000)补齐，保证每个标签视觉宽度一致
+            pad_len = max_name_len - len(t)
+            t_padded = t + "\u3000" * pad_len
+            filled = int(s // 10)
+            bar = "█" * filled + "░" * (10 - filled)
+            report_lines.append(f"  {t_padded}  {bar}  {s:>5.1f}%")
+        report_lines.append("")
+        if wrong_questions:
+            report_lines.append("错题清单：")
+            for qid, (qnum, qtxt, ans, exp) in wrong_questions:
+                report_lines.append(f"  {qnum}：正确答案 {ans}")
+            report_lines.append("")
+        if weak_topics:
+            report_lines.append(f"薄弱知识点：{'、'.join(weak_topics)}")
+            report_lines.append("复习建议：重看对应讲解→关闭笔记独立做错题→结合平台第8页交互验证")
+        else:
+            report_lines.append("掌握评价：优秀，本节核心知识点已全部掌握。")
+        report_lines.append("=" * 50)
+        report_text = "\n".join(report_lines)
+
+        st.code(report_text, language=None)
+
+        col_r1, col_r2 = st.columns(2)
+        with col_r1:
+            if st.button("🔄 重新开始练习（清空答题记录）", key="reset_quiz"):
+                for qid in st.session_state.quiz_stats:
+                    st.session_state.quiz_stats[qid] = {'answered': False, 'correct': False, 'topic': st.session_state.quiz_stats[qid]['topic']}
+                for key in ['q1', 'q2', 'q3', 'q4', 'q5', 'q6_slider', 'q7', 'q8']:
+                    if key in st.session_state:
+                        del st.session_state[key]
+                st.rerun()
+        with col_r2:
+            st.download_button(
+                label="💾 下载学习报告为txt",
+                data=report_text,
+                file_name="导数课堂练习学习报告.txt",
+                mime="text/plain",
+                key="download_report"
+            )
+
+    st.markdown("---")
+    st.info("💡 课后请完成「第 10 页：课后习题与代码实现✨」中的 20 道习题，每题都附有 Python 验证代码；想进一步观察切线动态，请打开「第 8 页：计算实践与代码实现✨」。")
 
 
 # 8. 计算实践与代码实现✨ 【关键：判断条件和导航文字完全一致，带✨】
